@@ -1,0 +1,294 @@
+# -*- coding: utf-8 -*-
+"""
+Plant Manager System
+植物信息管理系统 | 实验三
+Author: 高宁
+Date: 2026-11-21
+Description:
+    控制台植物数据管理程序，使用 list + dict 存储数据
+    预置5条初始植物记录
+    功能清单：
+    1. 添加植物
+    2. 品种汇总统计（总数/健康/病变）
+    3. 查询指定品种明细
+    4. 根据 plant_id 修改植物信息
+    5. 根据 plant_id 删除植物（二次确认）
+    6. 植物名称模糊查询
+    7. 按 plant_id 升序查看全部
+    8. 按种植日期排序查看全部
+    0. 退出系统
+"""
+
+
+def show_single_plant(plant: dict):
+    """格式化输出单株植物信息"""
+    print("-" * 50)
+    print(f"plant_id: {plant['plant_id']}")
+    print(f"名称: {plant['name']}")
+    print(f"状态: {plant['status']}")
+    print(f"病害: {plant['disease'] if plant['disease'] else '无'}")
+    print(f"养护建议: {plant['advice']}")
+    print(f"种植日期: {plant['plant_date']}")
+    print(f"备注: {plant['note']}")
+    print("-" * 50)
+
+
+def main():
+    plant_list = []
+    plant_id = 1
+
+    # 预置5条初始数据
+    plant_list.append({
+        "plant_id": plant_id,
+        "name": "水仙",
+        "status": "健康",
+        "disease": "",
+        "advice": "散射光，少浇水",
+        "plant_date": "2026-08-01",
+        "note": "无"
+    })
+    plant_id += 1
+
+    plant_list.append({
+        "plant_id": plant_id,
+        "name": "玫瑰",
+        "status": "健康",
+        "disease": "",
+        "advice": "适当减少枝叶，不要暴晒",
+        "plant_date": "2026-08-01",
+        "note": "增加棵数"
+    })
+    plant_id += 1
+
+    plant_list.append({
+        "plant_id": plant_id,
+        "name": "水仙",
+        "status": "病变",
+        "disease": "白粉病",
+        "advice": "剪掉病叶，喷杀菌剂",
+        "plant_date": "2026-09-11",
+        "note": "后期继续观察水仙状态"
+    })
+    plant_id += 1
+
+    plant_list.append({
+        "plant_id": plant_id,
+        "name": "玫瑰",
+        "status": "病变",
+        "disease": "根腐病",
+        "advice": "停止浇水，松土通风",
+        "plant_date": "2026-10-01",
+        "note": "无"
+    })
+    plant_id += 1
+
+    plant_list.append({
+        "plant_id": plant_id,
+        "name": "多肉",
+        "status": "健康",
+        "disease": "",
+        "advice": "多晒太阳，控水",
+        "plant_date": "2026-10-28",
+        "note": "摆在窗边"
+    })
+    plant_id += 1
+
+    while True:
+        print("\n====== 植物管理系统 ======")
+        print("1. 添加植物(手动输入)")
+        print("2. 查看所有品种汇总统计")
+        print("3. 查询某品种全部明细")
+        print("4. 修改植物信息(plant_id)")
+        print("5. 删除植物(plant_id)")
+        print("6. 模糊查询，输入部分名称")
+        print("7. 按plant_id升序查询全部")
+        print("8. 按种植日期排序查看全部")
+        print("0. 退出系统")
+        select = input("请输入你的选择：")
+
+        # 1. 添加植物
+        if select == "1":
+            name = input("请输入植物名称：")
+            # 校验状态
+            while True:
+                status = input("请输入植物的健康状态(健康/病变)：")
+                if status in ("健康", "病变"):
+                    break
+                print("[错误] 请输入正确的植物健康状态！")
+
+            disease = ""
+            if status == "健康":
+                advice = input("请输入养护建议：")
+            else:
+                disease = input("请输入病变名称：")
+                advice = input("请输入治疗/养护建议：")
+
+            plant_date = input("请输入种植/录入日期(格式：2026-08-01)：")
+
+            # 备注处理，修复原版bug：输入了但是没有赋值
+            while True:
+                note_opt = input("是否需要备注(是/否)：")
+                if note_opt == "是":
+                    note = input("请输入你的备注：")
+                    break
+                elif note_opt == "否":
+                    note = "无"
+                    break
+                print("[错误] 只能输入 是 或 否！")
+
+            new_plant = {
+                "plant_id": plant_id,
+                "name": name,
+                "status": status,
+                "disease": disease,
+                "advice": advice,
+                "plant_date": plant_date,
+                "note": note
+            }
+            plant_list.append(new_plant)
+            print("✅ 添加成功！")
+            plant_id += 1
+
+        # 2. 品种汇总统计
+        elif select == "2":
+            if len(plant_list) == 0:
+                print("⚠️ 暂无植物数据！")
+                continue
+            group_dict = {}
+            for plant in plant_list:
+                p_name = plant["name"]
+                if p_name not in group_dict:
+                    group_dict[p_name] = {"total": 0, "healthy": 0, "ill": 0}
+                group_dict[p_name]["total"] += 1
+                if plant["status"] == "健康":
+                    group_dict[p_name]["healthy"] += 1
+                else:
+                    group_dict[p_name]["ill"] += 1
+            print("\n==== 品种汇总统计 ====")
+            for variety, stat in group_dict.items():
+                print(f"品种：{variety:6s} | 总数：{stat['total']} | 健康：{stat['healthy']} | 病变：{stat['ill']}")
+
+        # 3. 查询某品种全部明细
+        elif select == "3":
+            search_name = input("请输入你需要查询的品种名称：")
+            result = [p for p in plant_list if p["name"] == search_name]
+            if not result:
+                print("⚠️ 没有找到该品种！")
+            else:
+                print(f"\n==== {search_name} 明细 ====")
+                for item in result:
+                    show_single_plant(item)
+
+        # 4. 修改植物信息
+        elif select == "4":
+            try:
+                edit_pid = int(input("请输入需要修改的plant_id："))
+            except ValueError:
+                print("[错误] 编号必须为数字！")
+                continue
+            target = None
+            for p in plant_list:
+                if p["plant_id"] == edit_pid:
+                    target = p
+                    break
+            if target is None:
+                print("⚠️ 找不到这个编号！")
+                continue
+
+            print("\n原信息：")
+            show_single_plant(target)
+            print("=== 重新录入信息 ===")
+            target["name"] = input("植物名称：")
+            while True:
+                s = input("状态（健康/病变）：")
+                if s in ("健康", "病变"):
+                    target["status"] = s
+                    break
+                print("[错误] 只能输入 健康 或 病变")
+
+            if target["status"] == "健康":
+                target["disease"] = ""
+                target["advice"] = input("养护建议：")
+            else:
+                target["disease"] = input("请输入病变疾病：")
+                target["advice"] = input("治疗/养护建议：")
+
+            target["plant_date"] = input("种植日期：")
+            while True:
+                note_opt = input("是否需要输入备注(是/否)：")
+                if note_opt == "是":
+                    target["note"] = input("请输入备注：")
+                    break
+                elif note_opt == "否":
+                    target["note"] = "无"
+                    break
+                print("[错误] 只能输入 是 或 否！")
+            print("✅ 修改成功！")
+
+        # 5. 删除植物
+        elif select == "5":
+            try:
+                del_id = int(input("请输入需要删除的plant_id："))
+            except ValueError:
+                print("[错误] 编号必须为数字！")
+                continue
+            find_idx = None
+            for idx, p in enumerate(plant_list):
+                if p["plant_id"] == del_id:
+                    find_idx = idx
+                    break
+            if find_idx is None:
+                print("⚠️ 找不到该编号！")
+                continue
+            print("\n待删除信息：")
+            show_single_plant(plant_list[find_idx])
+            confirm = input("是否确认删除？(是/否)：")
+            if confirm == "是":
+                plant_list.pop(find_idx)
+                print("✅ 删除成功！")
+            else:
+                print("已取消删除")
+
+        # 6. 模糊查询
+        elif select == "6":
+            keyword = input("请输入要模糊查询的关键词：")
+            result = [p for p in plant_list if keyword in p["name"]]
+            if not result:
+                print("⚠️ 没有匹配到信息！")
+            else:
+                print("\n==== 查询结果 ====")
+                for item in result:
+                    show_single_plant(item)
+
+        # 7. plant_id升序查看全部
+        elif select == "7":
+            opt = input("是否确定以plant_id升序方式查看？(是/否)：")
+            if opt == "是":
+                print("\n==== 按plant_id升序 ====")
+                sorted_list = sorted(plant_list, key=lambda x: x["plant_id"])
+                for item in sorted_list:
+                    show_single_plant(item)
+            else:
+                print("已取消排序查看")
+
+        # 8. 按种植日期排序
+        elif select == "8":
+            opt = input("是否按种植日期排序查看？(是/否)：")
+            if opt == "是":
+                print("\n==== 按种植日期排序 ====")
+                sorted_list = sorted(plant_list, key=lambda x: x["plant_date"])
+                for item in sorted_list:
+                    show_single_plant(item)
+            else:
+                print("已取消排序查看")
+
+        # 0. 退出
+        elif select == "0":
+            print("👋 程序结束，退出系统")
+            break
+        else:
+            print("[错误] 输入无效选项，请重新选择！")
+
+
+if __name__ == "__main__":
+    main()

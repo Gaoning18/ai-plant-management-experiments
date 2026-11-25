@@ -1,0 +1,69 @@
+# -*- coding: utf-8 -*-
+"""
+Plant Care Diagnostic System
+植物养护诊断工具
+
+Author: 高宁
+Date: 2026-11-21
+Description:
+    根据用户输入的植物叶片颜色、土壤湿度，自动给出养护建议
+    支持多次连续诊断，统计诊断总次数，输入合法性校验
+"""
+
+def main():
+    diagnosis_count = 0
+    valid_leaf_color = ["绿色", "黄色", "褐色", "枯萎"]
+
+    while True:
+        # 输入植物名称
+        variety_name = input("请输入植物名称：")
+
+        # 校验叶片颜色
+        leaf_color = input("请输入叶片的颜色(绿色/黄色/褐色/枯萎)：")
+        while leaf_color not in valid_leaf_color:
+            print("[错误] 请输入规定范围内的叶片颜色！")
+            leaf_color = input("请输入叶片的颜色(绿色/黄色/褐色/枯萎)：")
+
+        # 校验土壤湿度（支持捕获非数字输入异常）
+        while True:
+            try:
+                soil_humidity = int(input("请输入土壤湿度（0-100）："))
+                if 0 <= soil_humidity <= 100:
+                    break
+                else:
+                    print("[错误] 湿度范围必须在 0 ~ 100 之间！")
+            except ValueError:
+                print("[错误] 湿度必须输入整数！")
+
+        # 诊断逻辑
+        print("\n==== 植物养护建议 ====")
+        if leaf_color == "绿色":
+            if 30 <= soil_humidity <= 70:
+                print(f"【正常】{variety_name} 状态良好，请继续保持")
+            elif soil_humidity < 30:
+                print(f"【浇水】{variety_name} 土壤干旱，建议浇水")
+            elif soil_humidity > 70:
+                print(f"【排水】{variety_name} 土壤过湿，注意排水")
+        elif leaf_color == "黄色":
+            print(f"【缺氮】{variety_name} 可能缺氮，建议施用氮肥")
+        elif leaf_color == "褐色":
+            print(f"【缺水】{variety_name} 可能缺水或日灼，建议增加浇水或遮阴")
+        elif leaf_color == "枯萎":
+            print(f"【紧急】{variety_name} 严重缺水或病变，建议紧急处理")
+
+        diagnosis_count += 1
+
+        # 判断是否继续诊断
+        while True:
+            option = input("\n是否继续诊断？(y/n)：")
+            if option in ("y", "n"):
+                break
+            print("[错误] 输入无效，请输入 y 或 n")
+
+        if option == "n":
+            print(f"\n✅ 程序结束，本次一共完成 {diagnosis_count} 次诊断")
+            break
+
+
+if __name__ == "__main__":
+    main()

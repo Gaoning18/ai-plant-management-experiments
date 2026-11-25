@@ -1,0 +1,37 @@
+# -*- coding:utf-8 -*-
+# Time: 2026/11/21 10:59
+# Author: 高宁
+# File: 实验一.py
+# Project: AI植物管理实验合集
+
+"""
+实验一：植物基础信息录入与统计
+功能：接收用户输入的植物品种、数量、单价、健康植株数量，
+自动计算病变植株数量、健康率、健康植株总价值，并判断植株整体是否健康
+判定规则：健康植株 > 总数量一半，则判定整体健康
+"""
+
+# 基本数据，由用户手动输入
+variety_name = input("请输入植物名称:")
+plant_number = int(input("请输入种植数量："))
+price = float(input("请输入单价（元/斤）："))
+health_number = int(input("请输入健康棵数："))
+
+# 布尔判断：健康植株数量是否大于总数一半
+health = health_number > plant_number / 2
+
+# 算术运算：计算各项指标
+total_value = price * health_number          # 健康植株对应的总价值
+healthy_rate = health_number / plant_number  # 健康率
+sick_number = plant_number - health_number   # 病变植株数量
+
+# 格式化输出结果
+print("====植物信息统计====")
+print(f"品种名称:{variety_name}")
+print(f"种植数量：{plant_number}棵")
+print(f"单价：{price}元/斤")
+print(f"健康棵数:{health_number}棵")
+print(f"是否健康:{health}")
+print(f"病变棵树：{sick_number}棵")
+print(f"总价值：{total_value}元")
+print(f"健康率：{healthy_rate:.2%}")

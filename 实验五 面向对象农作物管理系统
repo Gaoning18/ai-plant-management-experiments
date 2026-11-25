@@ -1,0 +1,242 @@
+# -*- coding:utf-8 -*-
+# Time:2026/11/9 08:49
+# Author:高宁
+# File:实验五.py
+# Project:
+
+# 创建作物类
+class Crop(object):
+    # 初始化构造函数，实例属性
+    def __init__(self, plant_name="", status="", disease="", advice="", plant_date="", note=""):
+        self._plant_id = None
+        self.plant_name = plant_name
+        self.status = status
+        self.disease = disease
+        self.advice = advice
+        self.plant_date = plant_date
+        self.note = note
+
+    # 只读属性，外面只能看不能赋值
+    @property
+    def plant_id(self):
+        return self._plant_id
+
+    # 打印植物详细信息
+    def display(self):
+        print(f"plant_id:{self.plant_id},品种:{self.plant_name},状态:{self.status},疾病:{self.disease},建议:{self.advice},日期:{self.plant_date},备注:{self.note}")
+
+    # 将对象转换成字典
+    def to_dict(self):
+        return {
+            "plant_id": self.plant_id,
+            "plant_name": self.plant_name,
+            "status": self.status,
+            "disease": self.disease,
+            "advice": self.advice,
+            "plant_date": self.plant_date,
+            "note": self.note
+        }
+
+    # 返回是否健康
+    def is_healthy(self):
+        return self.status == "healthy"
+
+    # 从字典创建Crop对象
+    @classmethod
+    def from_dict(cls, data):
+        obj = cls(
+            plant_name=data["plant_name"],
+            status=data["status"],
+            disease=data["disease"],
+            advice=data["advice"],
+            plant_date=data["plant_date"],
+            note=data["note"]
+        )
+        obj._plant_id = data["plant_id"]
+        return obj
+
+
+# 设计CropDatabase类（管理所有植物）
+class CropDatabase(object):
+    def __init__(self):
+        self.plants = []  # 初始化新列表
+        self._next_id = 1  # 下一个可以用的编号
+
+    # 添加一棵植物
+    def add_plant(self, plant_name="", status="", disease="", advice="", plant_date="", note=""):
+        crop = Crop(plant_name, status, disease, advice, plant_date, note)
+        # 给作物绑定id
+        crop._plant_id = self._next_id
+        self.plants.append(crop)
+        self._next_id += 1
+        return crop.plant_id
+
+    # 根据编号删除植物
+    def remove(self, plant_id):
+        for crop in self.plants:
+            if crop.plant_id == plant_id:
+                self.plants.remove(crop)
+                return True  # 删除成功
+        return False  # 删除失败
+
+    # 根据编号修改植物信息 **kwargs 可以一次性传任意多个要修改的字段
+    def update(self, _plant_id, **kwargs):
+        crop = self.find_by_id(_plant_id)
+        if crop is None:
+            return False
+        if "plant_name" in kwargs:
+            crop.plant_name = kwargs["plant_name"]
+        if "status" in kwargs:
+            crop.status = kwargs["status"]
+        if "disease" in kwargs:
+            crop.disease = kwargs["disease"]
+        if "advice" in kwargs:
+            crop.advice = kwargs["advice"]
+        if "plant_date" in kwargs:
+            crop.plant_date = kwargs["plant_date"]
+        if "note" in kwargs:
+            crop.note = kwargs["note"]
+        return True
+
+    # 根据编号查找植物，返回Crop对象或None
+    def find_by_id(self, plant_id):
+        for c in self.plants:
+            if c.plant_id == plant_id:
+                return c
+        return None
+
+    # 根据品种名查找该品种所有植物
+    def find_by_name(self, plant_name):
+        res_list = []
+        for c in self.plants:
+            if c.plant_name == plant_name:
+                res_list.append(c)
+        return res_list
+
+    # 返回所有植物列表
+    def list_all(self):
+        return self.plants
+
+    # 按品种分组统计（返回各品种的总数、健康数、病变数）
+    def get_summary(self):
+        summary = {}
+        for crop in self.plants:
+            if crop.plant_name not in summary:
+                summary[crop.plant_name] = {"total": 0, "healthy": 0, "sick": 0}
+            summary[crop.plant_name]["total"] += 1
+            if crop.is_healthy():
+                summary[crop.plant_name]["healthy"] += 1
+            else:
+                summary[crop.plant_name]["sick"] += 1
+        return summary
+
+    # 统计植物总数
+    def total_count(self):
+        return len(self.plants)
+
+
+# 演示程序
+if __name__ == "__main__":
+    db = CropDatabase()
+    # 预先添加5棵以上植物，2个品种，包含健康、病变
+    db.add_plant(plant_name="水稻", status="healthy", disease="", advice="正常浇水", plant_date="2026-01-01", note="一号田")
+    db.add_plant(plant_name="水稻", status="sick", disease="稻瘟病", advice="喷洒杀菌剂", plant_date="2026-01-11", note="二号田")
+    db.add_plant(plant_name="水稻", status="healthy", disease="", advice="正常养护", plant_date="2026-04-01", note="")
+    db.add_plant(plant_name="玉米", status="sick", disease="虫害", advice="除虫", plant_date="2026-06-12", note="无")
+    db.add_plant(plant_name="玉米", status="healthy", disease="", advice="充足阳光", plant_date="2026-06-17", note="长势良好")
+
+    while True:
+        print("\n===== 农作物管理系统 =====")
+        print("1. 添加植物")
+        print("2. 根据编号修改植物信息")
+        print("3. 根据编号查找植物")
+        print("4. 根据品种名查找植物")
+        print("5. 查看全部植物列表")
+        print("6. 按品种分组统计汇总")
+        print("7. 统计植物总数量")
+        print("8. 根据编号删除植物")
+        print("0. 退出系统")
+        try:
+            choice = int(input("请输入功能序号："))
+        except ValueError:
+            print("输入错误！请输入数字。")
+            continue
+
+        if choice == 0:
+            print("程序退出")
+            break
+        elif choice == 1:
+            # 添加植物
+            p_name = input("输入品种名称：")
+            status = input("输入状态 healthy/sick：")
+            disease = input("输入病害名称（无则直接回车）：")
+            advice = input("养护建议：")
+            p_date = input("种植日期：")
+            note = input("备注：")
+            new_id = db.add_plant(p_name, status, disease, advice, p_date, note)
+            print(f"添加成功！新植物编号：{new_id}")
+        elif choice == 2:
+            # update 修改
+            pid = int(input("输入要修改的植物编号："))
+            kw = {}
+            new_name = input("新品种名（回车不修改）：")
+            if new_name.strip():
+                kw["plant_name"] = new_name
+            new_status = input("新状态 healthy/sick（回车不修改）：")
+            if new_status.strip():
+                kw["status"] = new_status
+            new_disease = input("新病害（回车不修改）：")
+            if new_disease.strip():
+                kw["disease"] = new_disease
+            new_advice = input("新养护建议（回车不修改）：")
+            if new_advice.strip():
+                kw["advice"] = new_advice
+            new_date = input("新种植日期（回车不修改）：")
+            if new_date.strip():
+                kw["plant_date"] = new_date
+            new_note = input("新备注（回车不修改）：")
+            if new_note.strip():
+                kw["note"] = new_note
+            res = db.update(pid, **kw)
+            print("修改成功" if res else "未找到该编号植物，修改失败")
+        elif choice == 3:
+            # find_by_id
+            pid = int(input("输入查询编号："))
+            crop = db.find_by_id(pid)
+            if crop:
+                crop.display()
+            else:
+                print("没有找到该植物")
+        elif choice == 4:
+            # find_by_name
+            name = input("输入品种名称：")
+            crop_list = db.find_by_name(name)
+            if crop_list:
+                print(f"\n【{name}】品种所有植物：")
+                for c in crop_list:
+                    c.display()
+            else:
+                print("没有该品种植物")
+        elif choice == 5:
+            # list_all
+            all_crop = db.list_all()
+            print("\n====全部植物信息====")
+            for c in all_crop:
+                c.display()
+        elif choice == 6:
+            # get_summary 统计
+            stat = db.get_summary()
+            print("\n====品种汇总统计====")
+            for name, info in stat.items():
+                print(f"品种:{name} | 总数:{info['total']} | 健康:{info['healthy']} | 病变:{info['sick']}")
+        elif choice == 7:
+            # total_count
+            total = db.total_count()
+            print(f"当前植物总数量：{total}")
+        elif choice == 8:
+            # remove 删除
+            pid = int(input("输入要删除的编号："))
+            ok = db.remove(pid)
+            print("删除成功" if ok else "删除失败，找不到该编号")
+        else:
+            print("序号无效，请重新选择！")
